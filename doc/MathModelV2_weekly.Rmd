@@ -38,11 +38,15 @@ shift availability for employee.
                                                                                  
  2. **$EmployeeLocPref_{e,l}$**: {-2,-1,0,1} negtive meaning not prefer 
                                                                                  
- 3. **$EmployeeSkillMap_{e,sk}$**: binary  employee and skill mapping            
-                                                                                 
- 4. **$EmployeeMax/MinHour_{e}$**: max/min hours per week of for each employee      
+ 3. **$EmployeeSkillMap_{e,sk}$**: binary  employee and skill mapping      
  
- 5. **$EmployeeCost_{e}$**: Cost of each employee                                                 
+ 4. **$EmployeeShiftMap_{e,d,sh}$**: binary. employee availaibility for shift sh on day d.                           
+                                                                                 
+ 5. **$EmployeeMax/MinHour_{e}$**: max/min hours per week of for each employee      
+ 
+ 6. **$EmployeeCost_{e}$**: Cost of each employee               
+ 
+             
  
 ## Variable:                                                                     
  1. **$Assign_{e,l, d, sh, sk}$**: binary. If assign the shift to employee or not 
@@ -61,24 +65,27 @@ $$LocPenality * \sum_{e}\sum_{l}\sum_{d}\sum_{sh}\sum_{sk}
   Assign_{e,l,d,sh,sk}*EmployeeLocPref_{e,l}$$
 
 **Minimize**  
- $$  \text{EmployeeCost + LocaPrefPenalty}$$  
+ $$  \text{EmployeeCost + LocPrefPenalty}$$  
  
  
 ## Constraints:
-1. Assign one and only shift sh to employee e, on day d, location l, and shift sh 
+1. Assign one and only shift sh to employee e, on day d, location l, and shift sh:
 
 $$\sum_{l}\sum_{sh}\sum_{sk} Assign_{e,l,d,sh,sk} \leq 1, \forall  \text{ e, d}$$
 
-2. Satisfy demand
+2. Satisfy demand :
 
 $$\sum_{e} Assign_{e,l,d,sh,sk} \geq Demand_{l,d,h,sk},  \forall  \text{ l, d, sh, sk}$$
 
-3. 
+3. Assignment Satisfies Shift:
+If the employee's skill is available for a shift, then he/she can be assigned.
 
-4. Employee's weekly hour limit
+$$\sum_{l}\sum_{sk} Assign_{e,l,d,sh,sk} \leq EmployeeShiftMap_{e,d,sh},  \forall  \text{ e, d, sh}$$
+
+
+4. Employee's weekly hour limit:
 $$\sum_{l}\sum_{d}\sum_{sh}\sum_{sk} Assign_{e,l,d,sh,sk} * ShiftLen_{l,sh} \leq EmployeeMaxHour_e, \forall  
 \text{ e}$$
 
 
   
-
