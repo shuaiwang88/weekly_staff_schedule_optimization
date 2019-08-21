@@ -1,0 +1,79 @@
+---
+title: "Weekly Staff Schedule Optimization Model V1"
+author: "Shuai Wang, Eugene Pyatigorsky "
+date: "8/17/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+**Notes**:
+The V1 model considers 1 day shift, muliti-locations(avaiable to all employees),
+skill preference, shift avaiabliblity for employee.
+
+
+**Sets**:
+
+1.  Locations: l
+2.  Employees: e
+3.  Shifts: sh
+4.  Skills: sk
+
+**Parameters**:
+
+1.  Demand(l, sh, sk)
+
+2.  Employee\_Skill(e,sk): employee skill map. binary
+
+3.  EmployeeSkillPreference(e, sk): preferred skills
+
+4.  EmployeeDoesShift(e,sh): employee's availability to the shift. __extend location__
+
+5.  UnfulfilledWeightingFactor: penalty for under staff 1000
+
+**Variables**:
+
+1.  Assign(l,e,sh,sk): binary
+
+2.  Unfulfilled(l,sh,sk): unfulfilled positions. Nonnegative
+
+3.  Unfulfilled Cost:
+    $\sum_{l}^{}{\sum_{\text{sh}}^{}{\sum_{\text{sk}}^{}\ Unfulfilled(l,\ sh,\ sk)\ *\ \ UnfulfilledWeightingFactor}}$
+
+4.  Not Preference Cost: The total cost caused by assigning employees
+    for less preferred positions:
+
+$$\sum_{l}^{}{\sum_{\text{sh}}^{}{\sum_{\text{sk}}^{}\ \sum_{e}^{}\text{Assign}}}\left( l,e,\, sh,\, sk \right)*\ EmployeeSkillPreference(e,sk)\ $$
+
+5.  TotalCost = UnfulfilledCost + NotPreferenceCost
+
+**Constraints**:
+
+1.  **Satisfy demand**:
+
+ The number of assigned employees must be equal to the needed number of
+ employees minus the unfulfilled positions
+
+ $$\sum_{e}^{E}{\text{Assign}\left( l,e,\text{sh},\text{sk} \right)} = \text{Demand}\left( l,\text{sh},\text{sk} \right) - \text{Unfulfilled}\left( l,\,\text{sh},\,\text{sk} \right), \forall l, sh, sk$$
+
+2.  **Assignment Satisfies Shift:**
+
+ If the employee is available for a shift, then he/she can be assigned.
+
+$$\sum_{l}^{}{\sum_{s_{k}}^{}As\text{sign}\left( l,e,sh,sk \right)} \leq E\text{mployeeDoesShift}\left( e,sh \right), \forall e,sh $$
+
+3.  **Assignment Satisfies Skills:**
+
+ If the employee has the needed skill for a position, he or she can be
+ assigned, else not
+
+ $$Assign(l,e,sh,sk) <= EmployeeHasSkill(e,sk), \forall l,e,sh,sk$$
+
+4.  **Maximum of One Shift:**
+
+ An employee cannot do more than one shift
+
+$$\sum_{l}^{}{\sum_{\text{sh}}^{}{\sum_{\text{sk}}^{}\text{ A}s}s}\text{ign}\left( l,e,\, sh,\, sk \right)\, \leq \, 1, \forall  \text{e in E}$$,

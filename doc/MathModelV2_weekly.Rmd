@@ -1,0 +1,72 @@
+---
+title: " Weekly Staff Schdule Optimization Model V2"
+author: "Shuai Wang, Eugene Pyatigorsky"
+date: "8/17/2019"
+output: html_document
+--
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Notes:
+This V2 model contains weekly shift, multilocation preference, skill preference,
+shift availability for employee.
+
+# Sets:
+|  Name         | Index        | Comments      |       
+|---------------|--------------|-------        |
+1. **Employee** | e | employee1-1000           |
+2. **Locations**| l | locations1-4             |
+3. **Shift**    | sh| predefined full shift like 6-14, partial shift 6:30-10:30|
+4. **Skills**   | sk| skill1-4                 |
+5. **Day**      | d | days of the week. 1-8    |
+6. **Hour**     | h | 1-24 hour                |
+
+## Parameters:
+
+### Demand:
+1. **$Demand_{l,d,h,sk}$**: Skill breakdown requirment in labor hours
+
+### Shift
+1. **$ShiftLen_{l,sh}$**: Shift length in hours 
+
+ 
+### Employee
+ 
+ 1. **$EmployeeShiftMap_{e,l,d,sh,sk}$**: binary
+    Employee availability at location, day, shift, skill                         
+                                                                                 
+ 2. **$EmployeeLocPref_{e,l}$**: {-2,-1,0,1} negtive meaning not prefer 
+                                                                                 
+ 3. **$EmployeeSkillMap_{e,sk}$**: binary  employee and skill mapping            
+                                                                                 
+ 4. **$EmployeeMax/MinHour_{e}$**: max/min hours per week of for each employee      
+ 
+ 5. **$EmployeeCost_{e}$**: Cost of each employee                                                 
+ 
+## Variable:                                                                     
+ 1. **$Assign_{e,l, d, sh, sk}$**: binary.   
+ 
+## Objective:
+**EmployeeCost**: 
+
+$$\sum_{e}\sum_{l}\sum_{d}\sum_{sh}\sum_{sk}Assign_{e,l,d,sh,sk} *EmployeeCost_{e}$$
+
+**Minimize**  $$EmployeeCost + 
+  LocPenality * \sum_{e}\sum_{l}\sum_{d}\sum_{sh}\sum_{sk}
+  Assign_{e,l,d,sh,sk}*EmployeeLocPref_{e,l}$$
+
+## Constraints:
+1. Assign one and only shift sh to employee e, on day d, location l, and shift sh 
+
+$$\sum_{l}\sum_{sh}\sum_{sk} Assign_{e,l,d,sh,sk} \leq 1, \forall  \text{ e, d}$$
+
+2. Satisfy demand
+
+$$\sum_{e} Assign_{e,l,d,sh,sk} \leq 1, \forall  \text{ l, d, sh, sk}$$
+
+3. Employee's weekly hour limit
+$$\sum_{l}\sum_{d}\sum_{sh}\sum_{sk} Assign_{e,l,d,sh,sk} * ShiftLen_{l,sh} \leq EmployeeMaxHour_e, \forall  \text{ e}$$
+
+  
+
