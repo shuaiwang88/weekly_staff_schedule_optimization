@@ -45,17 +45,25 @@ shift availability for employee.
  5. **$EmployeeCost_{e}$**: Cost of each employee                                                 
  
 ## Variable:                                                                     
- 1. **$Assign_{e,l, d, sh, sk}$**: binary.   
+ 1. **$Assign_{e,l, d, sh, sk}$**: binary. If assign the shift to employee or not 
+ 
+ 2. **$Uncover_{e,l,d,sh,sk}$**: nonnegetive. uncovered demand/gap for shift **not used**
  
 ## Objective:
 **EmployeeCost**: 
 
 $$\sum_{e}\sum_{l}\sum_{d}\sum_{sh}\sum_{sk}Assign_{e,l,d,sh,sk} *EmployeeCost_{e}$$
 
-**Minimize**  $$EmployeeCost + 
-  LocPenality * \sum_{e}\sum_{l}\sum_{d}\sum_{sh}\sum_{sk}
+**Penalty**
+
+1. LocaPrefPenalty:
+$$LocPenality * \sum_{e}\sum_{l}\sum_{d}\sum_{sh}\sum_{sk}
   Assign_{e,l,d,sh,sk}*EmployeeLocPref_{e,l}$$
 
+**Minimize**  
+ $$  \text{EmployeeCost + LocaPrefPenalty}$$  
+ 
+ 
 ## Constraints:
 1. Assign one and only shift sh to employee e, on day d, location l, and shift sh 
 
@@ -63,10 +71,14 @@ $$\sum_{l}\sum_{sh}\sum_{sk} Assign_{e,l,d,sh,sk} \leq 1, \forall  \text{ e, d}$
 
 2. Satisfy demand
 
-$$\sum_{e} Assign_{e,l,d,sh,sk} \leq 1, \forall  \text{ l, d, sh, sk}$$
+$$\sum_{e} Assign_{e,l,d,sh,sk} \geq Demand_{l,d,h,sk},  \forall  \text{ l, d, sh, sk}$$
 
-3. Employee's weekly hour limit
-$$\sum_{l}\sum_{d}\sum_{sh}\sum_{sk} Assign_{e,l,d,sh,sk} * ShiftLen_{l,sh} \leq EmployeeMaxHour_e, \forall  \text{ e}$$
+3. 
+
+4. Employee's weekly hour limit
+$$\sum_{l}\sum_{d}\sum_{sh}\sum_{sk} Assign_{e,l,d,sh,sk} * ShiftLen_{l,sh} \leq EmployeeMaxHour_e, \forall  
+\text{ e}$$
+
 
   
 
