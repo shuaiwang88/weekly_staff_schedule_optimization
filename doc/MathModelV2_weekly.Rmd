@@ -5,10 +5,13 @@ date: "8/17/2019"
 output: html_document
 --
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 ## Notes:
+Backgroud: a dog care(opens 24/7) with 4 locations needs a staff scheduling system. 
+The employee are able to work at all 4 location with preference, and they have 
+hard constraint on the shifts(ex, students cannot work on day shift, artists
+cannot work on night shift). Multi-sills are also considered. 
+
 This V2 model contains weekly shift, multilocation preference, skill preference,
 shift availability for employee.
 
@@ -25,7 +28,8 @@ shift availability for employee.
 ## Parameters:
 
 ### Demand:
-1. **$Demand_{l,d,h,sk}$**: Skill breakdown requirment in labor hours
+1. **$Demand_{l,d,h,sk}$**: 
+Skill breakdown requirment in labor hours(**or #labor if it's too granular **)
 
 ### Shift
 1. **$ShiftLen_{l,sh}$**: Shift length in hours 
@@ -43,6 +47,7 @@ shift availability for employee.
  3. **$EmployeeSkillMap_{e,sk}$**: binary  employee and skill mapping      
  
  4. **$EmployeeShiftMap_{e,d,sh}$**: binary. employee availaibility for shift sh on day d.                           
+ 
  5. **$EmployeeMax/MinHour_{e}$**: max/min hours per week of for each employee      
  
  6. **$EmployeeCost_{e}$**: cost of each employee               
