@@ -102,107 +102,40 @@ array[Employee] of float: EmployeeMinHour;
 array[Employee] of float: EmployeeCost;
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%      Define Vairable
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+/* Assignment */
+% index: e,l,d,sh,sk
+% note: binary. if assign shift to e at location l on day d for skill sk
+array[Employee, Location, Day, Shift, Skill] of var 0..1: Assign;
 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%      Define Objective
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+/* Total Employee Cost */
 
+var TotalEmployeeCost = 
+sum(e in Employee, l in Location, d in Day, sh in Shift, sk in Skill)
+(Assign[e,l,d,sh,sk] * EmployeeCost[e]);
 
 
+/* penality for location preference */
 
+float: Penalty_Location = 10000;
 
+var PenaltyCost = 
+PenaltyCost *
+sum(e in Employee, l in Location, d in Day, sh in Shift, sk in Skill)
+(Assign[e,l,d,sh,sk] * EmployeeLocPref[e,l]);
 
+/* Objective */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+var float: objective = TotalEmployeeCost + PenaltyCost;
 
 
 
