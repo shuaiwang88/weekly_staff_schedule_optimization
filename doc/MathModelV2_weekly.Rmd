@@ -39,18 +39,15 @@ Skill breakdown requirment in labor hours(**or #labor if it's too granular **)
  
 ### Employee
  
- 1. **$EmployeeShiftMap_{e,l,d,sh,sk}$**: binary
-    Employee availability at location, day, shift, skill                         
+ 1. **$EmployeeShiftMap_{e,d,sh}$**: binary. employee availaibility for shift sh on day d.                           
                                                                                  
  2. **$EmployeeLocPref_{e,l}$**: {-2,-1,0,1} negtive meaning not prefer 
                                                                                  
  3. **$EmployeeSkillMap_{e,sk}$**: binary  employee and skill mapping      
  
- 4. **$EmployeeShiftMap_{e,d,sh}$**: binary. employee availaibility for shift sh on day d.                           
+ 4. **$EmployeeMax/MinHour_{e}$**: max/min hours per week of for each employee      
  
- 5. **$EmployeeMax/MinHour_{e}$**: max/min hours per week of for each employee      
- 
- 6. **$EmployeeCost_{e}$**: cost of each employee               
+ 5. **$EmployeeCost_{e}$**: cost of each employee               
  
              
  
