@@ -139,4 +139,32 @@ var float: objective = TotalEmployeeCost + PenaltyCost;
 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%      Define Constraints
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+/* 1. Only one shift is allowed one day, one location, one position */
+% ∑l∑sh∑skAssigne,l,d,sh,sk≤1,∀ e, d
+
+constraint
+forall(e in Employee, d in Day)(
+    sum(l in Location, sh in Shift, sk in Skill)(
+    Assign[e, l, d, sh, sk]) <= 1 
+);
+
+/* 2. Satisfy demand */
+/* ∑eAssigne,l,d,sh,sk∗ShiftHourMapl,sh,h≥Demandl,d,h,sk,∀ l, d, sh, sk */
+ 
+constraint
+forall(l in Location, d in Day, sh in Shift, sk in Skill)(
+sum(e in Employee)(
+        Assign[e, l, d, sh, sk] * ShiftHourMap[l,sh,h] >= Demand[l,d,h,sk]
+    )    
+)
+
+
+
+
+
+
+
 
