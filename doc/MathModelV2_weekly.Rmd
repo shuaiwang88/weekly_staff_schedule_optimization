@@ -5,10 +5,13 @@ date: "8/17/2019"
 output: html_document
 --
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 ## Notes:
+Backgroud: a dog care(opens 24/7) with 4 locations needs a staff scheduling system. 
+The employee are able to work at all 4 location with preference, and they have 
+hard constraint on the shifts(ex, students cannot work on day shift, artists
+cannot work on night shift). Multi-sills are also considered. 
+
 This V2 model contains weekly shift, multilocation preference, skill preference,
 shift availability for employee.
 
@@ -25,48 +28,74 @@ shift availability for employee.
 ## Parameters:
 
 ### Demand:
-1. **$Demand_{l,d,h,sk}$**: Skill breakdown requirment in labor hours
+1. **$Demand_{l,d,h,sk}$**: 
+Skill breakdown requirment in labor hours(**or #labor if it's too granular **)
 
 ### Shift
 1. **$ShiftLen_{l,sh}$**: Shift length in hours 
 
+2. **$ShiftHourMap_{l, sh, h}$**: 0-1 matrix. Shift maps to location and hour
+
  
 ### Employee
  
- 1. **$EmployeeShiftMap_{e,l,d,sh,sk}$**: binary
-    Employee availability at location, day, shift, skill                         
+ 1. **$EmployeeShiftMap_{e,d,sh}$**: binary. employee availaibility for shift sh on day d.                           
                                                                                  
  2. **$EmployeeLocPref_{e,l}$**: {-2,-1,0,1} negtive meaning not prefer 
                                                                                  
- 3. **$EmployeeSkillMap_{e,sk}$**: binary  employee and skill mapping            
-                                                                                 
+ 3. **$EmployeeSkillMap_{e,sk}$**: binary  employee and skill mapping      
+ 
  4. **$EmployeeMax/MinHour_{e}$**: max/min hours per week of for each employee      
  
- 5. **$EmployeeCost_{e}$**: Cost of each employee                                                 
+ 5. **$EmployeeCost_{e}$**: cost of each employee               
+ 
+             
  
 ## Variable:                                                                     
- 1. **$Assign_{e,l, d, sh, sk}$**: binary.   
+ 1. **$Assign_{e,l, d, sh, sk}$**: binary. If assign the shift to employee or not 
+ 
+ 2. **$Uncover_{e,l,d,sh,sk}$**: nonnegetive. uncovered demand/gap for shift **not used**
  
 ## Objective:
 **EmployeeCost**: 
 
 $$\sum_{e}\sum_{l}\sum_{d}\sum_{sh}\sum_{sk}Assign_{e,l,d,sh,sk} *EmployeeCost_{e}$$
 
-**Minimize**  $$EmployeeCost + 
-  LocPenality * \sum_{e}\sum_{l}\sum_{d}\sum_{sh}\sum_{sk}
+**Penalty**
+
+1. LocaPrefPenalty:
+$$LocPenality * \sum_{e}\sum_{l}\sum_{d}\sum_{sh}\sum_{sk}
   Assign_{e,l,d,sh,sk}*EmployeeLocPref_{e,l}$$
 
+**Minimize**  
+ $$  \text{EmployeeCost + LocPrefPenalty}$$  
+ 
+ 
 ## Constraints:
-1. Assign one and only shift sh to employee e, on day d, location l, and shift sh 
+1. Only one shift is allowed:
+
+employee e, on day d, location l, and shift l can be only asssigned to 1.     
 
 $$\sum_{l}\sum_{sh}\sum_{sk} Assign_{e,l,d,sh,sk} \leq 1, \forall  \text{ e, d}$$
 
-2. Satisfy demand
+2. Satisfy demand :
 
-$$\sum_{e} Assign_{e,l,d,sh,sk} \leq 1, \forall  \text{ l, d, sh, sk}$$
+$$\sum_{e} Assign_{e,l,d,sh,sk} * ShiftHourMap_{l, sh, h}  \geq Demand_{l,d,h,sk},  \forall  \text{ l, d, sh, sk}$$
 
-3. Employee's weekly hour limit
-$$\sum_{l}\sum_{d}\sum_{sh}\sum_{sk} Assign_{e,l,d,sh,sk} * ShiftLen_{l,sh} \leq EmployeeMaxHour_e, \forall  \text{ e}$$
+3. Assignment Satisfies Shift:
+If the employee's is available for a shift, then he/she can be assigned.
+
+$$\sum_{l}\sum_{sk} Assign_{e,l,d,sh,sk} \leq EmployeeShiftMap_{e,d,sh},  \forall  \text{ e, d, sh}$$
+
+4. Assignment Satisfies skills:
+If the emplpoyee has he needed skill for a position, then he/she can be assigned.
+
+$$ Assign_{e,l,d,sh,sk} \leq EmployeeSkillMap_{e,sk},  \forall  \text{ e, l, d, sh, sk}$$
+
+
+5. Employee's weekly hour limit:
+$$\sum_{l}\sum_{d}\sum_{sh}\sum_{sk} Assign_{e,l,d,sh,sk} * ShiftLen_{l,sh} \leq EmployeeMaxHour_e, \forall  
+\text{ e}$$
+
 
   
-
