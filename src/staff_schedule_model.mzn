@@ -159,7 +159,46 @@ forall(l in Location, d in Day, sh in Shift, sk in Skill)(
 sum(e in Employee)(
         Assign[e, l, d, sh, sk] * ShiftHourMap[l,sh,h] >= Demand[l,d,h,sk]
     )    
+);
+
+
+
+/* Assignment Satisfies Shift: If the employee’s is available for a shift, then
+* he/she can be assigned. */
+/* ∑l∑skAssigne,l,d,sh,sk≤EmployeeShiftMape,d,sh,∀ e, d, sh */
+constraint
+forall(e in Employee, d in Day, sh in Shift)(
+    sum(l in Location, sk in Skill)(Assign[e, l, d, sh, sk]) <=
+                                                    EmployeeShiftMap[e, d, sh]
+);
+
+
+/* Assignment Satisfies skills: If the emplpoyee has he needed skill for a */
+/* position, then he/she can be assigned. */
+/* Assigne,l,d,sh,sk≤EmployeeSkillMape,sk,∀ e, l, d, sh, sk */
+forall(e in Employee, l in Location, d in Day, sh in Shift, sk in Skill)(
+    Assign[e, l, d, sh, sk] <= EmployeeSkillMap[e,sk]
 )
+
+/* Employee’s weekly hour limit: */
+/* ∑l∑d∑sh∑skAssigne,l,d,sh,sk∗ShiftLenl,sh≤EmployeeMaxHoure,∀ e */
+
+forall(e in Employee)(
+    sum(l in Location, d in Day, sh in Shift, sk in Skill)(
+    Assign[e, l, d, sh, sk]*ShiftLen[l,sh]) <= EmployeeMaxHour[e]
+   
+);
+
+forall(e in Employee)(
+    sum(l in Location, d in Day, sh in Shift, sk in Skill)(
+    Assign[e, l, d, sh, sk]*ShiftLen[l,sh]) >= EmployeeMinHour[e]
+);
+
+
+
+solve minimize objective;
+output ["Objective: "++show(objective) ++ "\n" ++];
+
 
 
 
