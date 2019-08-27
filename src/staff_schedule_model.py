@@ -7,7 +7,7 @@
 
 import numpy as np
 import pymzn as mz
-
+import pandas as pd
 
 
 ################################################################################
@@ -24,23 +24,60 @@ Employee = np.char.add(np.full(num_employee, 'Employee'),
 num_location = 4
 Location = np.char.add(np.full(num_location, 'Location'),
         np.arange(num_location).astype(str))
+Location = Location.astype(set)
 Location
 
-# Shift
-shift_set = np.array(['0816', '1018','1220','0812', '1014','1216','1418'])
 
+# Shift
+Shift  = np.array(['0816', '1018','1220','0812', '1014','1216','1418'])
+
+
+# Skill
+num_skill = 3
+Skill = np.char.add(np.full(num_skill, 'Skill'),
+        np.arange(num_skill).astype(str))
+
+# Days and Hours are defined in the mzn file
+
+
+################################################################################
+#       Define parameters
+################################################################################
+
+# Demand
+# Demand[l,d,h,sk]
+
+
+# Demand = np.array
+# np.random.randint(5, size=(2,3))
+
+a = np.zeros((5, 24))
+a[0]
+# Shift lengh in hour
 ShiftLen = [] 
 for sh in shift_set:
     shift_len = np.int(sh[2:]) - np.int(sh[:2])
     ShiftLen.append(shift_len)
 
 
-Shift = np.matrix()
-sh = 
+# shif-h
+Shift = np.empty((0,24),int)  
 for sh in shift_set:
     hour_window = np.zeros(24)
     hour_window[np.int(sh[:2]):np.int(sh[2:])] = 1
-    Shift.append(hour_window, axis = 0)
+    Shift = np.vstack((Shift,hour_window))
+
+
+
+mz.dict2dzn({'shift':set(Location)}, fout = "test.mzn")
+
+
+
+
+
+
+
+
 
 
 
