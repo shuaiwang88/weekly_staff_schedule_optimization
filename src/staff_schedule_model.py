@@ -45,13 +45,16 @@ Hour = np.arange(24)
 ################################################################################
 
 # Demand
-# Demand[l,d,h,sk]
+# Demand[l,d,sk,hZZ]
 
+np.random.seed(0) 
 Demand = np.empty((0,24))
-for i in np.arange(len(Location) * len(Day) * len(Hour)*len(Skill)):
+for i in np.arange(len(Location) * len(Day) *len(Skill)):
     demand_hour = np.zeros(24)
     demand_hour[8:20] = np.random.randint(1,4, size=12)
     Demand = np.vstack((Demand, demand_hour))
+
+Demand.shape=(len(Location), len(Day), len(Skill), 24)
 
 # Shift length in hour
 ShiftLen = [] 
@@ -66,31 +69,32 @@ for sh in Shift:
     hour_window[np.int(sh[:2]):np.int(sh[2:])] = 1
     ShiftHourMap = np.vstack((ShiftHourMap,hour_window))
 
-
-
-
-
 # Emplpoyee 
 
-# Employee Shift Map (e,d,sh)
+# Employee Shift Map (e,sh,d)
 
+np.random.seed(0) 
 EmployeeShiftMap = np.random.randint(2,
         size=(len(Employee)*len(Day), len(Shift)))
 
+EmployeeShiftMap.shape = (len(Employee), len(Shift), len(Day))
 
 # Employee Location preference (e,l)
 LocPref = [-2, -1, 0, 1]
 
 EmployeeLocPref = np.empty((0, len(LocPref)))
 
+np.random.seed(0) 
 for i in np.arange(len(Employee)):
     pref = np.random.choice(LocPref, len(LocPref),
         replace= False)
     EmployeeLocPref = np.vstack((EmployeeLocPref, pref))
+
 EmployeeLocPref
 
 
 # Employee Skill Map (e,sk)
+np.random.seed(0) 
 EmployeeSkillMap = np.random.randint(2, size = (len(Employee), len(Skill)))
 
 
@@ -98,6 +102,7 @@ EmployeeSkillMap = np.random.randint(2, size = (len(Employee), len(Skill)))
 MaxHour = [20, 40]
 MinHour = [0, 20]
 
+np.random.seed(0) 
 EmployeeMaxHour = np.random.choice(MaxHour, len(Employee))
 EmployeeMinHour = np.random.choice(MinHour, len(Employee))
 
@@ -105,21 +110,31 @@ EmployeeMinHour = np.random.choice(MinHour, len(Employee))
 
 # Employee Cost perhour 
 CostPerHour = [10,12,15]
+np.random.seed(0) 
 EmployeeCost = np.random.choice(CostPerHour, len(Employee))
+
 
 # mz.dict2dzn({'shift':set(Location)}, fout = "test.mzn")
 
 
+y = np.zeros((2, 3, 4))
+y
 
-
-
-
-
-
-
-
-
-
+mz_data = mz.dict2dzn({
+        'Employee':set(Employee),
+        'Location':set(Location),
+        'Shift': set(Shift),
+        'Skill': set(Skill),
+        'Demand': Demand,
+        'ShiftLen': ShiftLen,
+        'ShiftHourMap':ShiftHourMap,
+        'EmployeeShiftMap': EmployeeShiftMap,
+        'EmployeeLocPref': EmployeeLocPref,
+        'EmployeeSkillMap':  EmployeeSkillMap,
+        'EmployeeMaxHour': EmployeeMaxHour,
+        'EmployeeMinHour':EmployeeMinHour,
+        'EmployeeCost': EmployeeCost 
+        }, fout = 'data_simulate.dzn')
 
 
 
