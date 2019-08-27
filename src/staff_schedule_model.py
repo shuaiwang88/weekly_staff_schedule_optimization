@@ -2,13 +2,12 @@
 # 1. Generate data for dzn file to feed the mzn model;
 # 2. Call the model to run.
 # 3. Generate plot 
-
 ################################################################################
 
 import numpy as np
 import pymzn as mz
 import pandas as pd
-
+np.random.seed(0) 
 
 ################################################################################
 #       Define Sets
@@ -75,17 +74,40 @@ for sh in Shift:
 
 # Employee Shift Map (e,d,sh)
 
-EmployeeShiftMap 
+EmployeeShiftMap = np.random.randint(2,
+        size=(len(Employee)*len(Day), len(Shift)))
+
+
+# Employee Location preference (e,l)
+LocPref = [-2, -1, 0, 1]
+
+EmployeeLocPref = np.empty((0, len(LocPref)))
+
+for i in np.arange(len(Employee)):
+    pref = np.random.choice(LocPref, len(LocPref),
+        replace= False)
+    EmployeeLocPref = np.vstack((EmployeeLocPref, pref))
+EmployeeLocPref
+
+
+# Employee Skill Map (e,sk)
+EmployeeSkillMap = np.random.randint(2, size = (len(Employee), len(Skill)))
+
+
+# Employ Max/Min weekly hour
+MaxHour = [20, 40]
+MinHour = [0, 20]
+
+EmployeeMaxHour = np.random.choice(MaxHour, len(Employee))
+EmployeeMinHour = np.random.choice(MinHour, len(Employee))
 
 
 
+# Employee Cost perhour 
+CostPerHour = [10,12,15]
+EmployeeCost = np.random.choice(CostPerHour, len(Employee))
 
-
-
-
-
-
-mz.dict2dzn({'shift':set(Location)}, fout = "test.mzn")
+# mz.dict2dzn({'shift':set(Location)}, fout = "test.mzn")
 
 
 
