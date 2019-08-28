@@ -19,23 +19,27 @@
 % index: e. 
 % data: employee1, employee2, etc.
 enum Employee;
+int: num_employee;
 
 /* 2. Locations */
 % index: l
 % data: location1, location2, etc.
 enum Location;
+int: num_location;
 
 /* 3. Shifts */
 % index: sh
 % data: {f412, f513, p1620,etc}
 % note: full time and part time shift are both avaiable. 
 enum Shift;
+int: num_shift;
 
 
 /* 4. Skills/Positions */ 
 % index: sk
 % data: skill1, skill2, skill3
 enum Skill;
+int: num_skill;
 
 /* 5. Days */
 % index: d
@@ -58,19 +62,21 @@ set of int: Hour = 1..24;
 % index: l,d,h,sk
 % data: demand by location, day, hour, and skills
 % note: in labor hours. change to number of labor if it's too granluar
-array[Location, Day, Skill, Hour] of float: Demand;
+/* array[Location, Day, Skill, Hour] of float: Demand; */
+array[1..num_location, Day, 1..num_skill, Hour] of float: Demand;
 
 % Shift --------------------------------------------------------
 /* Shift Lengh */
 % index: shift 
 % note: the length of shift in hours 
-array[Location, Shift] of float: ShiftLen;
+/* array[location, Shift] of float: ShiftLen; */
+array[1..num_location, 1..num_shift] of float: ShiftLen;
 
 
 /* Shift Hour Map */
 % index: l,sh,h
 % data: 0-1 matrix
-array[Location, Shift, Hour] of int: ShiftHourMap;
+array[1..num_location, 1..num_shift, Hour] of int: ShiftHourMap;
 
 
 % Employee --------------------------------------------------------
@@ -78,18 +84,18 @@ array[Location, Shift, Hour] of int: ShiftHourMap;
 /* Employee Shift Map */
 % index: e,sh,d
 % note: 0-1 matrix. Employee's avaiablility on day d for shift sh
-array[Employee, Shift, Day] of int: EmployeeShiftMap;
+array[1..num_employee, 1..num_shift, Day] of int: EmployeeShiftMap;
 
 /* Employee Location Preference */
 % index: e, l
 % data: the problem has 4 location. we initialize the data as {-2,-1,0,1}
 % note: smaller number means dislike 
-array[Employee, Location] of int: EmployeeLocPref;
+array[1..num_employee, 1..num_location] of int: EmployeeLocPref;
 
 /* Employee Skill Map */
 % index: e, sk
 % note: 0-1 matrix. Employee's avaiablity for skills 
-array[Employee, Skill] of int: EmployeeSkillMap;
+array[1..num_employee, 1..num_skill] of int: EmployeeSkillMap;
 
 /* Employee Max/Min Weekly Working Hours */
 % index: e
@@ -136,7 +142,7 @@ sum(e in Employee, l in Location, d in Day, sh in Shift, sk in Skill)
 
 /* Objective */
 
-var float: objective = TotalEmployeeCost + PenaltyCost;
+var float: objective = TotalEmployeeCost;%+ PenaltyCost;
 
 
 
@@ -163,10 +169,10 @@ forall(e in Employee, d in Day)(
 % );
 
 constraint
-forall(l in Location, d in Day, sh in Shift, sk in Skill, h in Hour)(
-sum(e in Employee)(
-        Assign[e, l, d, sh, sk] * ShiftHourMap[l,sh,h] >= Demand[l,d,sk,h]
-    )    
+forall(l in Location, d in Day,  sk in Skill, h in Hour)(
+sum(e in Employee, sh in Shift)(
+        Assign[e, l, d, sh, sk]* ShiftHourMap[l,sh,h]) >= Demand[l,d,sk,h]
+ 
 );
 
 
