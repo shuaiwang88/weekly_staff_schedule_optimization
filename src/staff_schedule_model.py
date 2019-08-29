@@ -15,7 +15,7 @@ np.random.seed(0)
 ################################################################################
 
 # Employee
-num_employee = 20
+num_employee = 100
 Employee = np.char.add(np.full(num_employee, 'Employee'),
         np.arange(num_employee).astype(str))
 
