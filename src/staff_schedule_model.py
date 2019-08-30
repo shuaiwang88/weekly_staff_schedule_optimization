@@ -1,4 +1,4 @@
-################################################################################
+################################################################################ 
 # 1. Generate data for dzn file to feed the mzn model;
 # 2. Call the model to run.
 # 3. Generate plot
@@ -146,10 +146,14 @@ EmployeeCost = np.random.choice(CostPerHour, len(Employee))
 Shift = ["shift"  + s for s in Shift]
 
 mz_data = mz.dict2dzn({
-        'Employee':set(Employee),
-        'Location':set(Location),
-        'Shift': set(Shift),
-        'Skill': set(Skill),
+        #'Employee':set(Employee),
+        #'Location':set(Location),
+        #'Shift': set(Shift),
+        #'Skill': set(Skill),
+        #'Employee':Employee,
+        #'Location':Location,
+        #'Shift': Shift,
+        #'Skill': Skill,
         'num_employee': num_employee,
         'num_location': num_location,
         'num_shift': num_shift,
@@ -168,4 +172,7 @@ mz_data = mz.dict2dzn({
 ########### solve #####
 
 # solns = mz.minizinc('staff_schedule_model.mzn', 'data_simulate.dzn',solver = 'CBC')
-solns = mz.minizinc('staff_schedule_model.mzn', 'data_simulate_final.dzn',  Solver='cbc')
+solns = mz.minizinc('staff_schedule_model.mzn', 'data_simulate_final.dzn',  
+        Solver='cbc', output_mode = 'json')
+
+
