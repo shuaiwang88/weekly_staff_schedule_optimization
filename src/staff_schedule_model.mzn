@@ -18,28 +18,40 @@
 /* 1. Employees */  
 % index: e. 
 % data: employee1, employee2, etc.
-enum Employee;
 int: num_employee;
+set of int: Employee = 1..num_employee;  
+% array[EmployeeNum] of string: Employee; 
+% enum Employee;
+
+% array[Products] of int: profit;
+% array[Products] of string: pname; 
+
 
 /* 2. Locations */
 % index: l
 % data: location1, location2, etc.
-enum Location;
 int: num_location;
+set of int: Location = 1..num_location;  
+% array[LocationNum] of string: Location; 
+% enum Location;
+
 
 /* 3. Shifts */
 % index: sh
 % data: {f412, f513, p1620,etc}
 % note: full time and part time shift are both avaiable. 
-enum Shift;
 int: num_shift;
+% enum Shift;
+set of int: Shift = 1..num_shift;  
 
 
 /* 4. Skills/Positions */ 
 % index: sk
 % data: skill1, skill2, skill3
-enum Skill;
 int: num_skill;
+% enum Skill;
+set of int: Skill = 1..num_skill;  
+
 
 /* 5. Days */
 % index: d
@@ -63,20 +75,20 @@ set of int: Hour = 1..24;
 % data: demand by location, day, hour, and skills
 % note: in labor hours. change to number of labor if it's too granluar
 /* array[Location, Day, Skill, Hour] of float: Demand; */
-array[1..num_location, Day, 1..num_skill, Hour] of float: Demand;
+array[Location, Day, Skill, Hour] of float: Demand;
 
 % Shift --------------------------------------------------------
 /* Shift Lengh */
 % index: shift 
 % note: the length of shift in hours 
 /* array[location, Shift] of float: ShiftLen; */
-array[1..num_location, 1..num_shift] of float: ShiftLen;
+array[Location, Shift] of float: ShiftLen;
 
 
 /* Shift Hour Map */
 % index: l,sh,h
 % data: 0-1 matrix
-array[1..num_location, 1..num_shift, Hour] of float: ShiftHourMap;
+array[Location, Shift, Hour] of float: ShiftHourMap;
 
 
 % Employee --------------------------------------------------------
@@ -84,29 +96,29 @@ array[1..num_location, 1..num_shift, Hour] of float: ShiftHourMap;
 /* Employee Shift Map */
 % index: e,sh,d
 % note: 0-1 matrix. Employee's avaiablility on day d for shift sh
-array[1..num_employee, 1..num_shift, Day] of int: EmployeeShiftMap;
+array[Employee, Shift, Day] of int: EmployeeShiftMap;
 
 /* Employee Location Preference */
 % index: e, l
 % data: the problem has 4 location. we initialize the data as {-2,-1,0,1}
 % note: smaller number means dislike 
-array[1..num_employee, 1..num_location] of float: EmployeeLocPref;
+array[Employee, Location] of float: EmployeeLocPref;
 
 /* Employee Skill Map */
 % index: e, sk
 % note: 0-1 matrix. Employee's avaiablity for skills 
-array[1..num_employee, 1..num_skill] of int: EmployeeSkillMap;
+array[Employee, Skill] of int: EmployeeSkillMap;
 
 /* Employee Max/Min Weekly Working Hours */
 % index: e
-array[1..num_employee] of int: EmployeeMaxHour;
+array[Employee] of int: EmployeeMaxHour;
 
-array[1..num_employee] of int: EmployeeMinHour;
+array[Employee] of int: EmployeeMinHour;
 
 
 /* Employee Cost */
 % index: e
-array[1..num_employee] of float: EmployeeCost;
+array[Employee] of float: EmployeeCost;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -116,8 +128,8 @@ array[1..num_employee] of float: EmployeeCost;
 /* Assignment */
 % index: e,l,d,sh,sk
 % note: binary. if assign shift to e at location l on day d for skill sk
+% array[Employee, Location, Day, Skill, Shift] of var 0..1: Assign;
 array[Employee, Location, Day, Skill, Shift] of var 0..1: Assign;
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -129,16 +141,17 @@ array[Employee, Location, Day, Skill, Shift] of var 0..1: Assign;
 var  float: TotalEmployeeCost= 
 sum(e in Employee, l in Location, d in Day, sh in Shift, sk in Skill)
 (Assign[e,l,d,sk,sh] * EmployeeCost[e]);
-
+% sum(Employee, Location, Day, Shift, Skill)
+% (Assign[Employee, Location, Day, Skill, Shift] * EmployeeCost[Employee]);
 
 /* penality for location preference */
 
 float: Penalty_Location = 10000;
 
-var float: PenaltyCost = 
-Penalty_Location *
-sum(e in Employee, l in Location, d in Day, sh in Shift, sk in Skill)
-(Assign[e,l,d,sk,sh] * EmployeeLocPref[e,l]);
+% var float: PenaltyCost = 
+% Penalty_Location *
+% sum(e in Employee, l in Location, d in Day, sh in Shift, sk in Skill)
+% (Assign[e,l,d,sk,sh] * EmployeeLocPref[e,l]);
 
 /* Objective */
 
@@ -161,19 +174,12 @@ forall(e in Employee, d in Day)(
 /* 2. Satisfy demand */
 /* ∑eAssigne,l,d,sh,sk∗ShiftHourMapl,sh,h≥Demandl,d,h,sk,∀ l, d, sh, sk */
  
-% constraint
-
-
 constraint
 forall(l in Location, d in Day,  sk in Skill, h in Hour)(
 sum(e in Employee, sh in Shift)(
         Assign[e, l, d, sk, sh]* ShiftHourMap[l,sh,h]) >= Demand[l,d,sk,h]
  
 );
-
-
-
-
 
 /* Assignment Satisfies Shift: If the employee’s is available for a shift, then
 * he/she can be assigned. */
@@ -183,7 +189,6 @@ forall(e in Employee, d in Day, sh in Shift)(
     sum(l in Location, sk in Skill)(Assign[e, l, d, sk, sh]) <=
                                                     EmployeeShiftMap[e, sh, d]
 );
-
 
 /* Assignment Satisfies skills: If the emplpoyee has he needed skill for a */
 /* position, then he/she can be assigned. */
@@ -201,6 +206,7 @@ forall(e in Employee)(
     Assign[e, l, d, sk, sh]*ShiftLen[l,sh]) <= EmployeeMaxHour[e]
    
 );
+
 % constraint
 % forall(e in Employee)(
 %     sum(l in Location, d in Day, sh in Shift, sk in Skill)(
@@ -208,11 +214,8 @@ forall(e in Employee)(
 % );
 
 
-
 solve minimize objective;
-output ["Objective: "++show(objective) ++ "\n" ++
-show(Assign)
-];
+output ["Objective: "++show(objective) ++ "\n" ++ show(Assign)]; 
 
 
 
