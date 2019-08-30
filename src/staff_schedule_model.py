@@ -15,7 +15,7 @@ np.random.seed(0)
 ################################################################################
 
 # Employee
-num_employee = 100
+num_employee = 80
 Employee = np.char.add(np.full(num_employee, 'Employee'),
         np.arange(num_employee).astype(str))
 
@@ -29,7 +29,7 @@ Location
 
 
 # Shift
-Shift  = np.array(['0816', '1018','1220','0812', '1014','1216','1418'])
+Shift  = np.array(['0816', '1018','1220', '1420', '1620', '0812', '1014','1216','1418'])
 num_shift = len(Shift)
 
 
@@ -41,6 +41,8 @@ Skill = np.char.add(np.full(num_skill, 'Skill'),
 # Days and Hours are defined in the mzn file
 
 Day = np.arange(7)
+Day
+Day[1:3]
 Hour = np.arange(24)
 ################################################################################
 #       Define parameters
@@ -53,7 +55,10 @@ np.random.seed(0)
 Demand = np.empty((0,24))
 for i in np.arange(len(Location) * len(Day) *len(Skill)):
     demand_hour = np.zeros(24)
-    demand_hour[8:20] = np.random.randint(1,4, size=12)
+    # demand_hour[8:13] = np.random.randint(2,4, size=5)
+    # demand_hour[13:19] = np.random.randint(1,3, size=6)
+    # demand_hour[19:21] = np.random.randint(1,2, size=2)
+    demand_hour[8:20] = np.random.randint(1,3, size=12)
     Demand = np.vstack((Demand, demand_hour))
 
 Demand.shape=(len(Location), len(Day), len(Skill), 24)
@@ -89,6 +94,8 @@ for i in np.arange(num_location):
         ShiftHourMap = np.vstack((ShiftHourMap,hour_window))
 
 ShiftHourMap.shape = ((num_location, num_shift, len(Hour)))
+ShiftHourMap[0][0]
+Shift[0]
 # Emplpoyee
 
 # Employee Shift Map (e,sh,d)
@@ -98,7 +105,7 @@ EmployeeShiftMap = np.random.randint(2,
         size=(len(Employee)*len(Day), len(Shift)))
 
 EmployeeShiftMap.shape = (len(Employee), len(Shift), len(Day))
-
+EmployeeShiftMap[0][0]
 # Employee Location preference (e,l)
 LocPref = [-2, -1, 0, 1]
 
@@ -129,16 +136,14 @@ EmployeeMinHour = np.random.choice(MinHour, len(Employee))
 
 
 # Employee Cost perhour
-CostPerHour = [10,12,15]
+CostPerHour = [10,10,10]
 np.random.seed(0)
 EmployeeCost = np.random.choice(CostPerHour, len(Employee))
 
 
 # mz.dict2dzn({'shift':set(Location)}, fout = "test.mzn")
 
-
-y = np.zeros((2, 3, 4))
-y
+Shift = ["shift"  + s for s in Shift]
 
 mz_data = mz.dict2dzn({
         'Employee':set(Employee),
@@ -158,4 +163,9 @@ mz_data = mz.dict2dzn({
         'EmployeeMaxHour': EmployeeMaxHour,
         'EmployeeMinHour':EmployeeMinHour,
         'EmployeeCost': EmployeeCost
-        }, fout = 'data_simulate.dzn')
+        }, fout = 'data_simulate_final.dzn')
+
+########### solve #####
+
+# solns = mz.minizinc('staff_schedule_model.mzn', 'data_simulate.dzn',solver = 'CBC')
+solns = mz.minizinc('staff_schedule_model.mzn', 'data_simulate_final.dzn',  Solver='cbc')

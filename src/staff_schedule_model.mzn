@@ -59,7 +59,7 @@ set of int: Hour = 1..24;
 
 % Demand --------------------------------------------------------
 /* Demand */
-% index: l,d,h,sk
+% index: l,d,sk, h
 % data: demand by location, day, hour, and skills
 % note: in labor hours. change to number of labor if it's too granluar
 /* array[Location, Day, Skill, Hour] of float: Demand; */
@@ -116,7 +116,7 @@ array[1..num_employee] of float: EmployeeCost;
 /* Assignment */
 % index: e,l,d,sh,sk
 % note: binary. if assign shift to e at location l on day d for skill sk
-array[Employee, Location, Day, Shift, Skill] of var 0..1: Assign;
+array[Employee, Location, Day, Skill, Shift] of var 0..1: Assign;
 
 
 
@@ -128,7 +128,7 @@ array[Employee, Location, Day, Shift, Skill] of var 0..1: Assign;
 
 var  float: TotalEmployeeCost= 
 sum(e in Employee, l in Location, d in Day, sh in Shift, sk in Skill)
-(Assign[e,l,d,sh,sk] * EmployeeCost[e]);
+(Assign[e,l,d,sk,sh] * EmployeeCost[e]);
 
 
 /* penality for location preference */
@@ -138,7 +138,7 @@ float: Penalty_Location = 10000;
 var float: PenaltyCost = 
 Penalty_Location *
 sum(e in Employee, l in Location, d in Day, sh in Shift, sk in Skill)
-(Assign[e,l,d,sh,sk] * EmployeeLocPref[e,l]);
+(Assign[e,l,d,sk,sh] * EmployeeLocPref[e,l]);
 
 /* Objective */
 
@@ -155,7 +155,7 @@ var float: objective = TotalEmployeeCost;%+ PenaltyCost;
 constraint
 forall(e in Employee, d in Day)(
     sum(l in Location, sh in Shift, sk in Skill)(
-    Assign[e, l, d, sh, sk]) <= 1 
+    Assign[e, l, d, sk, sh]) <= 1 
 );
 
 /* 2. Satisfy demand */
@@ -164,12 +164,12 @@ forall(e in Employee, d in Day)(
 % constraint
 
 
-% constraint
-% forall(l in Location, d in Day,  sk in Skill, h in Hour)(
-% sum(e in Employee, sh in Shift)(
-%         Assign[e, l, d, sh, sk]* ShiftHourMap[l,sh,h]) >= Demand[l,d,sk,h]
+constraint
+forall(l in Location, d in Day,  sk in Skill, h in Hour)(
+sum(e in Employee, sh in Shift)(
+        Assign[e, l, d, sk, sh]* ShiftHourMap[l,sh,h]) >= Demand[l,d,sk,h]
  
-% );
+);
 
 
 
@@ -178,11 +178,11 @@ forall(e in Employee, d in Day)(
 /* Assignment Satisfies Shift: If the employee’s is available for a shift, then
 * he/she can be assigned. */
 /* ∑l∑skAssigne,l,d,sh,sk≤EmployeeShiftMape,d,sh,∀ e, d, sh */
-% constraint
-% forall(e in Employee, d in Day, sh in Shift)(
-%     sum(l in Location, sk in Skill)(Assign[e, l, d, sh, sk]) <=
-%                                                     EmployeeShiftMap[e, sh, d]
-% );
+constraint
+forall(e in Employee, d in Day, sh in Shift)(
+    sum(l in Location, sk in Skill)(Assign[e, l, d, sk, sh]) <=
+                                                    EmployeeShiftMap[e, sh, d]
+);
 
 
 /* Assignment Satisfies skills: If the emplpoyee has he needed skill for a */
@@ -190,22 +190,22 @@ forall(e in Employee, d in Day)(
 /* Assigne,l,d,sh,sk≤EmployeeSkillMape,sk,∀ e, l, d, sh, sk */
 constraint
 forall(e in Employee, l in Location, d in Day, sh in Shift, sk in Skill)(
-    Assign[e, l, d, sh, sk] <= EmployeeSkillMap[e,sk]
+    Assign[e, l, d, sk, sh] <= EmployeeSkillMap[e,sk]
 );
 
-/* Employee’s weekly hour limit: */
+% /* Employee’s weekly hour limit: */
 /* ∑l∑d∑sh∑skAssigne,l,d,sh,sk∗ShiftLenl,sh≤EmployeeMaxHoure,∀ e */
 constraint
 forall(e in Employee)(
     sum(l in Location, d in Day, sh in Shift, sk in Skill)(
-    Assign[e, l, d, sh, sk]*ShiftLen[l,sh]) <= EmployeeMaxHour[e]
+    Assign[e, l, d, sk, sh]*ShiftLen[l,sh]) <= EmployeeMaxHour[e]
    
 );
-constraint
-forall(e in Employee)(
-    sum(l in Location, d in Day, sh in Shift, sk in Skill)(
-    Assign[e, l, d, sh, sk]*ShiftLen[l,sh]) >= EmployeeMinHour[e]
-);
+% constraint
+% forall(e in Employee)(
+%     sum(l in Location, d in Day, sh in Shift, sk in Skill)(
+%     Assign[e, l, d, sk, sh]*ShiftLen[l,sh]) >= EmployeeMinHour[e]
+% );
 
 
 
