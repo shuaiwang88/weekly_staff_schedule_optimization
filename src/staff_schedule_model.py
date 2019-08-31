@@ -1,7 +1,7 @@
 ################################################################################ 
 # 1. Generate data for dzn file to feed the mzn model;
 # 2. Call the model to run.
-# 3. Generate plot
+# 4. Generate plot
 ################################################################################
 
 import numpy as np
@@ -172,7 +172,9 @@ mz_data = mz.dict2dzn({
 ########### solve #####
 
 # solns = mz.minizinc('staff_schedule_model.mzn', 'data_simulate.dzn',solver = 'CBC')
+# solns = mz.CBC('staff_schedule_model.mzn', 'data_simulate_final.dzn')
+
 solns = mz.minizinc('staff_schedule_model.mzn', 'data_simulate_final.dzn',  
-        Solver='cbc', output_mode = 'json')
+        solver = mz.cbc, output_mode ='dict', parallel=4)
 
-
+type(solns)
