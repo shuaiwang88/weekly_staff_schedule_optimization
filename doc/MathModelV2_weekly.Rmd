@@ -24,6 +24,9 @@ shift availability for employee.
 4. **Skills**   | sk| skill1-4                 |
 5. **Day**      | d | days of the week. 1-8    |
 6. **Hour**     | h | 1-24 hour                |
+7. **ShiftBlock**| b | data: {day, afternoon, night}|
+
+
 
 ## Parameters:
 
@@ -36,6 +39,7 @@ Skill breakdown requirment in labor hours(**or #labor if it's too granular **)
 
 2. **$ShiftHourMap_{l, sh, h}$**: 0-1 matrix. Shift maps to location and hour
 
+3. **$ShiftTimeBlockMap_{sh}$**: the time block of the shift 
  
 ### Employee
  
@@ -97,5 +101,13 @@ $$ Assign_{e,l,d,sk,sh} \leq EmployeeSkillMap_{e,sk},  \forall  \text{ e, l, d, 
 $$\sum_{l}\sum_{d}\sum_{sh}\sum_{sk} Assign_{e,l,d,sk,sh} * ShiftLen_{l,sh} \leq EmployeeMaxHour_e, \forall  
 \text{ e}$$
 
+
+## selective constraints:
+
+6. No day shift afte a night shift
+
+
+
+$$  Assign_{e,l,d,sk,sh \in ShiftTimeBlockMap =night } +  Assign_{e,l,d+1,sk,sh \in  ShiftTimeBlockMap = day} <=1     \forall e, l, d-1, sk, sh $$
 
   
