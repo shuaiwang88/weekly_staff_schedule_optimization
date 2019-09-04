@@ -1,7 +1,6 @@
 ################################################################################
 # 1. Generate data for dzn file to feed the mzn model;
-# 2. Call the model to run.
-# 4. Generate plot
+# 2. Call the model to run.  4. Generate plot
 ################################################################################
 
 import numpy as np
@@ -19,6 +18,8 @@ num_employee = 80
 Employee = np.char.add(np.full(num_employee, 'Employee'),
         np.arange(num_employee).astype(str))
 
+mz.dict2dzn({"emp": str(Employee)
+        })
 
 # Location
 num_location = 4
@@ -104,11 +105,15 @@ Shift[0]
 
 ShiftTimeBlock =  []
 
+# day = 1
+# night =2
 for sh in Shift:
     if np.int(sh[2:]) <= 18:
-        block = 'day'
+        # block = 'day'
+        block = 1
     else:
-        block = 'night'
+        # block = 'night'
+        block = 2
     ShiftTimeBlock.append(block)
 
 
@@ -179,6 +184,7 @@ mz_data = mz.dict2dzn({
         'Demand': Demand,
         'ShiftLen': ShiftLen,
         'ShiftHourMap':ShiftHourMap,
+        'ShiftTimeBlock': str(ShiftTimeBlock),
         'EmployeeShiftMap': EmployeeShiftMap,
         'EmployeeLocPref': EmployeeLocPref,
         'EmployeeSkillMap':  EmployeeSkillMap,
@@ -188,18 +194,6 @@ mz_data = mz.dict2dzn({
         }, fout = 'data_simulate_final.dzn')
 
 ########### solve #####
+# solns = mz.minizinc('staff_schedule_model.mzn', 'data_simulate_final.dzn',
+#         solver = mz.cbc, output_mode ='json', parallel=4)
 
-# solns = mz.minizinc('staff_schedule_model.mzn', 'data_simulate.dzn',solver = 'CBC')
-# solns = mz.CBC('staff_schedule_model.mzn', 'data_simulate_final.dzn')
-
-solns = mz.minizinc('staff_schedule_model.mzn', 'data_simulate_final.dzn',
-        solver = mz.cbc, output_mode ='json', parallel=4)
-
-import json
-
-with open('data.json', 'w') as outfile:
-    json.dump(solns, outfile)
-
-solns
-solns.print(put_file="test.json")
-type(solns)

@@ -90,6 +90,16 @@ array[Location, Shift] of float: ShiftLen;
 % data: 0-1 matrix
 array[Location, Shift, Hour] of float: ShiftHourMap;
 
+/* ShiftTimeBlockMap */
+%index: shift
+%data: 1: day; 2: night
+array[Shift] of int: ShiftTimeBlock;
+
+
+/* day and night shift index */
+% array[Shift where 
+% set of int: Index_Night = [Shift[e]|e in index_set(ShiftTimeBlock)  where ShiftTimeBlock[e] = 2];
+% set of int: Index_Day   = [Shift[e]|e in index_set(ShiftTimeBlock)  where ShiftTimeBlock[e] = 1];
 
 % Employee --------------------------------------------------------
 
@@ -175,7 +185,7 @@ forall(e in Employee, d in Day)(
 /* âeAssigne,l,d,sh,skâShiftHourMapl,sh,hâ¥Demandl,d,h,sk,â l, d, sh, sk */
  
 constraint
-forall(l in Location, d in Day,  sk in Skill, h in Hour)(
+forall(l in Location, d in Day, sk in Skill, h in Hour)(
 sum(e in Employee, sh in Shift)(
         Assign[e, l, d, sk, sh]* ShiftHourMap[l,sh,h]) >= Demand[l,d,sk,h]
  
@@ -190,11 +200,12 @@ forall(e in Employee, d in Day, sh in Shift)(
                                                     EmployeeShiftMap[e, sh, d]
 );
 
+
 /* Assignment Satisfies skills: If the emplpoyee has he needed skill for a */
 /* position, then he/she can be assigned. */
 /* Assigne,l,d,sh,skâ¤EmployeeSkillMape,sk,â e, l, d, sh, sk */
 constraint
-forall(e in Employee, l in Location, d in Day, sh in Shift, sk in Skill)(
+forall(e in Employee, l in Location, d in Day , sh in Shift, sk in Skill)(
     Assign[e, l, d, sk, sh] <= EmployeeSkillMap[e,sk]
 );
 
@@ -228,19 +239,35 @@ forall(e in Employee)(
 
 
 %  For each nurse i = 1, . . . , I, and for k = 1, . . . , K â 2:
-% forall(e in Employee, l in Location, d in Day[], sh in Shift)
-% Assign[e, l, d, sk, sh] +  Assign[e, l, d, sk, sh] < 2 
+% Assign(e,l,d,sk,sh∈ShiftTimeBlockMap=night)+
+% Assign(e,l,d+1,sk,sh∈ShiftTimeBlockMap=day)
+% <= 1  ∀e,l,d−1,sk,sh
+
+% constraint forall (i,j in 1..n where i<j) (x[i] != x[j]);
+%                       % is the same as
+% constraint forall ([ x[i] != x[j] | i,j in 1..n where i<j ]);
+
+% constraint
+% forall(e in Employee, l in Location, d in Day where d != Day[card(Day)],sk in Skill, sh in Shift)(
+
+% % (Assign[e, l, d, sk, sh in [Shift[e]| e in index_set(ShiftTimeBlock)  where ShiftTimeBlock[e] = 2]]  )
+% %  + (Assign[e, l, d+1, sk, sh in [Shift[e]| e in index_set(ShiftTimeBlock)  where ShiftTimeBlock[e] = 1]]  < 1));
+ 
+% Assign[e, l, d, sk, sh in Shift where ShiftTimeBlock[sh] = 2] 
+%  + Assign[e, l, d+1, sk, sh in Shift where ShiftTimeBlock[sh] = 1]  < 1);
 
 
-
-
-
-
+% [i | i in index_set(statNames) where statNames[i] = "ARMOR"]
 
 
 solve minimize objective;
-% output ["Objective: "++show(objective) ++ "\n" ++ show(Assign)]; 
+output ["Objective: "++show(objective) ++ "\n"];
+% %  ++ show(Assign)]; 
+% % output [show(Day[1..card(Day)-1])]; 
 
-output [show(Day[1..card(Day)-1])]; 
+% % output[show([index_of("night", ShiftTimeBlock)])];
 
+% output [show([Shift[e]| e in index_set(ShiftTimeBlock)  where ShiftTimeBlock[e] = 2] )]; 
+
+ output [show(sh in Shift where index_set(ShiftTimeBlock[sh] = 2))]; 
 
