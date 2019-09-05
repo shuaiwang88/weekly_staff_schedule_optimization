@@ -99,9 +99,7 @@ ShiftHourMap[0][0]
 Shift[0]
 
 
-# ShiftTimeBlockMap_
-
-# Shift  = np.array(['0816', '1018','1220', '1420', '1620', '0812', '1014','1216','1418'])
+# ShiftTimeBlockMap_ Shift  = np.array(['0816', '1018','1220', '1420', '1620', '0812', '1014','1216','1418'])
 
 ShiftTimeBlock =  []
 
@@ -116,9 +114,8 @@ for sh in Shift:
         block = 2
     ShiftTimeBlock.append(block)
 
-
-
-
+NightShift= [index+1 for index, value in enumerate(ShiftTimeBlock) if value == 2] 
+DayShift =  [index+1 for index, value in enumerate(ShiftTimeBlock) if value == 1]
 # Emplpoyee
 
 # Employee Shift Map (e,sh,d)
@@ -184,7 +181,9 @@ mz_data = mz.dict2dzn({
         'Demand': Demand,
         'ShiftLen': ShiftLen,
         'ShiftHourMap':ShiftHourMap,
-        'ShiftTimeBlock': str(ShiftTimeBlock),
+        # 'ShiftTimeBlock': str(ShiftTimeBlock),
+        'DayShift': set(DayShift),
+        'NightShift': set(NightShift),
         'EmployeeShiftMap': EmployeeShiftMap,
         'EmployeeLocPref': EmployeeLocPref,
         'EmployeeSkillMap':  EmployeeSkillMap,
