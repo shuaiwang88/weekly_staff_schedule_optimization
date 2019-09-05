@@ -93,13 +93,17 @@ array[Location, Shift, Hour] of float: ShiftHourMap;
 /* ShiftTimeBlockMap */
 %index: shift
 %data: 1: day; 2: night
-array[Shift] of int: ShiftTimeBlock;
-
+% array[Shift] of int: ShiftTimeBlock;
+% set of int: ShiftTimeBlock;
 
 /* day and night shift index */
+% set of int:  NightShift = [Shift[e]|e in index_set(ShiftTimeBlock) where ShiftTimeBlock[e] = 2];\
+ 
+set of int: DayShift;
+ set of int: NightShift;
 % array[Shift where 
-% set of int: Index_Night = [Shift[e]|e in index_set(ShiftTimeBlock)  where ShiftTimeBlock[e] = 2];
-% set of int: Index_Day   = [Shift[e]|e in index_set(ShiftTimeBlock)  where ShiftTimeBlock[e] = 1];
+% array of var: Index_Night = [Shift[e]|e in index_set(ShiftTimeBlock)  where ShiftTimeBlock[e] = 2];
+% array of var: Index_Day   = [Shift[e]|e in index_set(ShiftTimeBlock)  where ShiftTimeBlock[e] = 1];
 
 % Employee --------------------------------------------------------
 
@@ -173,7 +177,7 @@ var float: objective = TotalEmployeeCost;%+ PenaltyCost;
 %      Define Constraints
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 /* 1. Only one shift is allowed one day, one location, one position */
-% âlâshâskAssigne,l,d,sh,skâ¤1,â e, d
+% ∑l∑sh∑skAssigne,l,d,sh,sk≤1,∀ e, d
 
 constraint
 forall(e in Employee, d in Day)(
@@ -182,7 +186,7 @@ forall(e in Employee, d in Day)(
 );
 
 /* 2. Satisfy demand */
-/* âeAssigne,l,d,sh,skâShiftHourMapl,sh,hâ¥Demandl,d,h,sk,â l, d, sh, sk */
+/* ∑eAssigne,l,d,sh,sk∗ShiftHourMapl,sh,h≥Demandl,d,h,sk,∀ l, d, sh, sk */
  
 constraint
 forall(l in Location, d in Day, sk in Skill, h in Hour)(
@@ -191,9 +195,9 @@ sum(e in Employee, sh in Shift)(
  
 );
 
-/* Assignment Satisfies Shift: If the employeeâs is available for a shift, then
+/* Assignment Satisfies Shift: If the employee’s is available for a shift, then
 * he/she can be assigned. */
-/* âlâskAssigne,l,d,sh,skâ¤EmployeeShiftMape,d,sh,â e, d, sh */
+/* ∑l∑skAssigne,l,d,sh,sk≤EmployeeShiftMape,d,sh,∀ e, d, sh */
 constraint
 forall(e in Employee, d in Day, sh in Shift)(
     sum(l in Location, sk in Skill)(Assign[e, l, d, sk, sh]) <=
@@ -203,14 +207,14 @@ forall(e in Employee, d in Day, sh in Shift)(
 
 /* Assignment Satisfies skills: If the emplpoyee has he needed skill for a */
 /* position, then he/she can be assigned. */
-/* Assigne,l,d,sh,skâ¤EmployeeSkillMape,sk,â e, l, d, sh, sk */
+/* Assigne,l,d,sh,sk≤EmployeeSkillMape,sk,∀ e, l, d, sh, sk */
 constraint
 forall(e in Employee, l in Location, d in Day , sh in Shift, sk in Skill)(
     Assign[e, l, d, sk, sh] <= EmployeeSkillMap[e,sk]
 );
 
-% /* Employeeâs weekly hour limit: */
-/* âlâdâshâskAssigne,l,d,sh,skâShiftLenl,shâ¤EmployeeMaxHoure,â e */
+% /* Employee’s weekly hour limit: */
+/* ∑l∑d∑sh∑skAssigne,l,d,sh,sk∗ShiftLenl,sh≤EmployeeMaxHoure,∀ e */
 constraint
 forall(e in Employee)(
     sum(l in Location, d in Day, sh in Shift, sk in Skill)(
@@ -224,50 +228,13 @@ forall(e in Employee)(
 %     Assign[e, l, d, sk, sh]*ShiftLen[l,sh]) >= EmployeeMinHour[e]
 % );
 
-% no day shift after a night shift
-% constraint 
-% forall(t in Hour, k in Zone) (
-%    sum(s in Hour where s >= (t - Window_Start[k]) /\ s <= (t - Window_End))
-%   (PickScheduling[s,k,t] + OverPickScheduling[s,k,t]) = Demand[t,k]
-% );
-
-% constraint
-% sum(f in ShiftSet where Shift_Len[f] > Hour_Part)
-%    (Shift_Assign[f]) >= 
-%    Ratio_Full_to_Part*sum(f in ShiftSet where Shift_Len[f] <= Hour_Part)
-%    (Shift_Assign[f]);
 
 
-%  For each nurse i = 1, . . . , I, and for k = 1, . . . , K â 2:
-% Assign(e,l,d,sk,sh∈ShiftTimeBlockMap=night)+
-% Assign(e,l,d+1,sk,sh∈ShiftTimeBlockMap=day)
-% <= 1  ∀e,l,d−1,sk,sh
-
-% constraint forall (i,j in 1..n where i<j) (x[i] != x[j]);
-%                       % is the same as
-% constraint forall ([ x[i] != x[j] | i,j in 1..n where i<j ]);
-
-% constraint
-% forall(e in Employee, l in Location, d in Day where d != Day[card(Day)],sk in Skill, sh in Shift)(
-
-% % (Assign[e, l, d, sk, sh in [Shift[e]| e in index_set(ShiftTimeBlock)  where ShiftTimeBlock[e] = 2]]  )
-% %  + (Assign[e, l, d+1, sk, sh in [Shift[e]| e in index_set(ShiftTimeBlock)  where ShiftTimeBlock[e] = 1]]  < 1));
- 
-% Assign[e, l, d, sk, sh in Shift where ShiftTimeBlock[sh] = 2] 
-%  + Assign[e, l, d+1, sk, sh in Shift where ShiftTimeBlock[sh] = 1]  < 1);
-
-
-% [i | i in index_set(statNames) where statNames[i] = "ARMOR"]
-
+constraint 
+ forall(e in Employee, l in Location, d in Day where d != Day[card(Day)],sk in Skill)(
+    sum(sh in NightShift)(Assign[e, l, d, sk, sh]) + sum(sh in DayShift)(Assign[e, l, d+1, sk, sh])  <= 1
+);
 
 solve minimize objective;
 output ["Objective: "++show(objective) ++ "\n"];
 % %  ++ show(Assign)]; 
-% % output [show(Day[1..card(Day)-1])]; 
-
-% % output[show([index_of("night", ShiftTimeBlock)])];
-
-% output [show([Shift[e]| e in index_set(ShiftTimeBlock)  where ShiftTimeBlock[e] = 2] )]; 
-
- output [show(sh in Shift where index_set(ShiftTimeBlock[sh] = 2))]; 
-
