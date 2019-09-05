@@ -1,5 +1,5 @@
----
-title: " Weekly Staff Schdule Optimization Model V2"
+f--
+fitle: " Weekly Staff Schdule Optimization Model V2"
 author: "Shuai Wang, Eugene Pyatigorsky"
 date: "8/17/2019"
 output: html_document
@@ -24,11 +24,14 @@ shift availability for employee.
 4. **Skills**   | sk| skill1-4                 |
 5. **Day**      | d | days of the week. 1-8    |
 6. **Hour**     | h | 1-24 hour                |
+7. **ShiftBlock**| b | data: {day, afternoon, night}|
+
+
 
 ## Parameters:
 
 ### Demand:
-1. **$Demand_{l,d,h,sk}$**: 
+1. **$Demand_{l,d,sk,h}$**: 
 Skill breakdown requirment in labor hours(**or #labor if it's too granular **)
 
 ### Shift
@@ -36,6 +39,7 @@ Skill breakdown requirment in labor hours(**or #labor if it's too granular **)
 
 2. **$ShiftHourMap_{l, sh, h}$**: 0-1 matrix. Shift maps to location and hour
 
+3. **$ShiftTimeBlockMap_{sh}$**: the time block of the shift 
  
 ### Employee
  
@@ -59,13 +63,13 @@ Skill breakdown requirment in labor hours(**or #labor if it's too granular **)
 ## Objective:
 **EmployeeCost**: 
 
-$$\sum_{e}\sum_{l}\sum_{d}\sum_{sh}\sum_{sk}Assign_{e,l,d,sh,sk} *EmployeeCost_{e}$$
+$$\sum_{e}\sum_{l}\sum_{d}\sum_{sh}\sum_{sk}Assign_{e,l,d,sk,sh} *EmployeeCost_{e}$$
 
 **Penalty**
 
 1. LocaPrefPenalty:
 $$LocPenality * \sum_{e}\sum_{l}\sum_{d}\sum_{sh}\sum_{sk}
-  Assign_{e,l,d,sh,sk}*EmployeeLocPref_{e,l}$$
+  Assign_{e,l,d,sk,sh}*EmployeeLocPref_{e,l}$$
 
 **Minimize**  
  $$  \text{EmployeeCost + LocPrefPenalty}$$  
@@ -76,26 +80,34 @@ $$LocPenality * \sum_{e}\sum_{l}\sum_{d}\sum_{sh}\sum_{sk}
 
 employee e, on day d, location l, and shift l can be only asssigned to 1.     
 
-$$\sum_{l}\sum_{sh}\sum_{sk} Assign_{e,l,d,sh,sk} \leq 1, \forall  \text{ e, d}$$
+$$\sum_{l}\sum_{sh}\sum_{sk} Assign_{e,l,d,sk,sh} \leq 1, \forall  \text{ e, d}$$
 
 2. Satisfy demand :
 
-$$\sum_{e} Assign_{e,l,d,sh,sk} * ShiftHourMap_{l, sh, h}  \geq Demand_{l,d,h,sk},  \forall  \text{ l, d, sh, sk}$$
+$$\sum_{e}\sum_{sh} Assign_{e,l,d,sk,sh} * ShiftHourMap_{l, sh, h}  \geq Demand_{l,d,sk,h},  \forall  \text{ l, d, sk, h}$$
 
 3. Assignment Satisfies Shift:
 If the employee's is available for a shift, then he/she can be assigned.
 
-$$\sum_{l}\sum_{sk} Assign_{e,l,d,sh,sk} \leq EmployeeShiftMap_{e,d,sh},  \forall  \text{ e, d, sh}$$
+$$\sum_{l}\sum_{sk} Assign_{e,l,d,sk,sh} \leq EmployeeShiftMap_{e,d,sh},  \forall  \text{ e, d, sh}$$
 
 4. Assignment Satisfies skills:
 If the emplpoyee has he needed skill for a position, then he/she can be assigned.
 
-$$ Assign_{e,l,d,sh,sk} \leq EmployeeSkillMap_{e,sk},  \forall  \text{ e, l, d, sh, sk}$$
+$$ Assign_{e,l,d,sk,sh} \leq EmployeeSkillMap_{e,sk},  \forall  \text{ e, l, d, sh, sk}$$
 
 
 5. Employee's weekly hour limit:
-$$\sum_{l}\sum_{d}\sum_{sh}\sum_{sk} Assign_{e,l,d,sh,sk} * ShiftLen_{l,sh} \leq EmployeeMaxHour_e, \forall  
+$$\sum_{l}\sum_{d}\sum_{sh}\sum_{sk} Assign_{e,l,d,sk,sh} * ShiftLen_{l,sh} \leq EmployeeMaxHour_e, \forall  
 \text{ e}$$
 
+
+## selective constraints:
+
+6. No day shift afte a night shift
+
+
+
+$$  Assign_{e,l,d,sk,sh \in ShiftTimeBlockMap =night } +  Assign_{e,l,d+1,sk,sh \in  ShiftTimeBlockMap = day} <=1     \forall e, l, d-1, sk, sh $$
 
   
