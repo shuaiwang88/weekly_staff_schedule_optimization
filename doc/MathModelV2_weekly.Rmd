@@ -84,7 +84,10 @@ $$\sum_{l}\sum_{sh}\sum_{sk} Assign_{e,l,d,sk,sh} \leq 1, \forall  \text{ e, d}$
 
 2. Satisfy demand :
 
-$$\sum_{e}\sum_{sh} Assign_{e,l,d,sk,sh} * ShiftHourMap_{l, sh, h}  \geq Demand_{l,d,sk,h},  \forall  \text{ l, d, sk, h}$$
+2.1 $$\sum_{e}\sum_{sh} Assign_{e,l,d,sk,sh} * ShiftHourMap_{l, sh, h}  \geq Demand_{l,d,sk,h},  \forall  \text{ l, d, sk, h}$$
+2.2 overnight shift meets the demand
+
+$$Assign_{e,l,d-1, sk, sh = Overnight} * ShiftHourMap_{l, sh = Overnight, h} $$
 
 3. Assignment Satisfies Shift:
 If the employee's is available for a shift, then he/she can be assigned.
@@ -102,7 +105,7 @@ $$\sum_{l}\sum_{d}\sum_{sh}\sum_{sk} Assign_{e,l,d,sk,sh} * ShiftLen_{l,sh} \leq
 \text{ e}$$
 
 
-## selective constraints:
+## optional constraints:
 
 6. No day shift afte a night shift
 
